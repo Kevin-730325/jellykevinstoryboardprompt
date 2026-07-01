@@ -140,7 +140,14 @@
   .rowctl button:hover{border-color:var(--gold);}
   .rowctl-hint{font-size:11px;color:var(--muted);}
   /* 空白可编辑占位提示 */
-  [contenteditable]:empty:before{content:attr(data-ph);color:#6a655c;}
+  [contenteditable]:empty:before,[contenteditable][data-empty="true"]:before{content:attr(data-ph);color:#6a655c;}
+  .cut-move{display:flex;gap:6px;margin-top:10px;justify-content:center;}
+  .cut-move button{width:38px;height:24px;display:inline-flex;align-items:center;justify-content:center;
+        font-family:var(--sans);font-size:12px;color:var(--label);background:#181613;
+        border:1px solid var(--line2);border-radius:5px;cursor:pointer;transition:.15s;}
+  .cut-move button:hover{border-color:var(--gold);color:var(--gold);}
+  .cut-move button:disabled{opacity:.28;cursor:not-allowed;border-color:var(--line2);color:var(--muted);}
+  .v2move{justify-content:flex-start;margin:-2px 0 10px;}
 
   .minictl{display:flex;gap:6px;margin-top:10px;}
   .minictl button{font-family:var(--sans);font-size:11.5px;color:var(--label);background:#1a1816;
@@ -243,7 +250,7 @@
   <div class="rowctl noexport" id="rowctl1">
     <button onclick="addRow1()">＋ 增加一个镜头</button>
     <button onclick="delRow1()">－ 删除最后一个</button>
-    <span class="rowctl-hint">1.0 一行一个镜头，可逐个增删</span>
+    <span class="rowctl-hint">1.0 一行一个镜头，可逐个增删；Cut 上的 ↑↓ 可换位</span>
   </div>
   <div class="panels t">
     <div>
@@ -360,7 +367,7 @@
   <div class="rowctl noexport">
     <button onclick="addPair2()">＋ 增加镜头（每次两个）</button>
     <button onclick="delPair2()">－ 删除末尾两个</button>
-    <span class="rowctl-hint">为保持排版整齐，2.0 只能是偶数个（2 / 4 / 6 / 8 / 10）</span>
+    <span class="rowctl-hint">为保持排版整齐，2.0 只能是偶数个（2 / 4 / 6 / 8 / 10）；Cut 上的 ↑↓ 可换位</span>
   </div>
   <div class="v2band">场景图（Secondary）</div>
   <div class="v2grid2">
@@ -525,6 +532,7 @@ function showView(n){
   document.getElementById('view2').classList.toggle('hidden', n!==2);
   document.getElementById('tab1').classList.toggle('active', n===1);
   document.getElementById('tab2').classList.toggle('active', n===2);
+  updateMoveButtons();
   if(window.refreshStoryTitleParticles) requestAnimationFrame(window.refreshStoryTitleParticles);
 }
 function recalcTotal(){
@@ -578,6 +586,67 @@ async function exportPNG(ev){
 }
 
 /* ---------- 1.0 增删镜头（逐个） ---------- */
+function makeMoveButtons(type){
+  const box=document.createElement('div');
+  box.className='cut-move noexport'+(type==='v2'?' v2move':'');
+  box.innerHTML=`
+    <button type="button" data-type="${type}" data-move="up" title="和上一个 Cut 交换">↑换</button>
+    <button type="button" data-type="${type}" data-move="down" title="和下一个 Cut 交换">↓换</button>`;
+  return box;
+}
+function setupMoveButtons(root=document){
+  root.querySelectorAll('#view1 .row').forEach(row=>{
+    if(row.dataset.moveReady==='true') return;
+    const cut=row.querySelector('.cut');
+    if(cut) cut.appendChild(makeMoveButtons('v1'));
+    row.dataset.moveReady='true';
+  });
+  root.querySelectorAll('#view2 .v2grid .v2card').forEach(card=>{
+    if(card.dataset.moveReady==='true') return;
+    const frame=card.querySelector('.frame');
+    const controls=makeMoveButtons('v2');
+    if(frame) card.insertBefore(controls, frame);
+    else card.appendChild(controls);
+    card.dataset.moveReady='true';
+  });
+  updateMoveButtons();
+}
+function updateMoveButtons(){
+  const update=(items)=>{
+    items.forEach((item,i)=>{
+      const up=item.querySelector('.cut-move [data-move="up"]');
+      const down=item.querySelector('.cut-move [data-move="down"]');
+      if(up) up.disabled=i===0;
+      if(down) down.disabled=i===items.length-1;
+    });
+  };
+  update([...document.querySelectorAll('#view1 .row')]);
+  update([...document.querySelectorAll('#view2 .v2grid .v2card')]);
+}
+function swapCut(item,dir,type){
+  const selector=type==='v2'?'.v2card':'.row';
+  const target=dir==='up'?item.previousElementSibling:item.nextElementSibling;
+  if(!target || !target.matches(selector)) return;
+  const before=item.getBoundingClientRect().top;
+  if(dir==='up') item.parentNode.insertBefore(item,target);
+  else item.parentNode.insertBefore(target,item);
+  if(type==='v2'){
+    renumber2(); recalcTotal(); extractPalette(document.getElementById('view2'));
+  }else{
+    renumber1(); extractPalette(document.getElementById('view1'));
+  }
+  setupMoveButtons();
+  const after=item.getBoundingClientRect().top;
+  window.scrollBy(0,after-before);
+}
+document.addEventListener('click', e=>{
+  const btn=e.target.closest('.cut-move button[data-move]');
+  if(!btn) return;
+  e.preventDefault();
+  const item=btn.dataset.type==='v2'?btn.closest('.v2card'):btn.closest('.row');
+  if(item) swapCut(item,btn.dataset.move,btn.dataset.type);
+});
+
 function makeRow1(n){
   const div=document.createElement('div');
   div.className='grid row';
@@ -602,6 +671,8 @@ function addRow1(){
   const row=makeRow1(n);
   view.insertBefore(row, ctl);
   row.querySelectorAll('.drop').forEach(bindDropZone);
+  setupMoveButtons();
+  initStablePlaceholders(row);
   renumber1();
   row.scrollIntoView({behavior:'smooth',block:'center'});
 }
@@ -610,6 +681,7 @@ function delRow1(){
   if(rows.length<=1){ alert('至少保留 1 个镜头'); return; }
   rows[rows.length-1].remove();
   renumber1();
+  updateMoveButtons();
   extractPalette(document.getElementById('view1'));
 }
 
@@ -622,6 +694,7 @@ function addLegend(){
   const li=document.createElement('li');
   li.innerHTML='<span class="n"></span><span contenteditable spellcheck="false" data-ph="点击填写"></span>';
   ul.appendChild(li);
+  initStablePlaceholders(li);
   renumberLegend();
 }
 function delLegend(){
@@ -663,7 +736,9 @@ function addPair2(){
     grid.appendChild(c); last=c;
     c.querySelectorAll('.drop').forEach(bindDropZone);
     c.querySelectorAll('.v2ch .dur').forEach(bindDur);
+    initStablePlaceholders(c);
   }
+  setupMoveButtons();
   renumber2(); recalcTotal();
   if(last) last.scrollIntoView({behavior:'smooth',block:'center'});
 }
@@ -674,6 +749,7 @@ function delPair2(){
   cards[cards.length-1].remove();
   cards[cards.length-2].remove();
   renumber2(); recalcTotal();
+  updateMoveButtons();
   extractPalette(document.getElementById('view2'));
 }
 
@@ -682,21 +758,93 @@ document.querySelectorAll('#view2 .v2ch .dur').forEach(el=>{
   el.addEventListener('blur', recalcTotal);
 });
 recalcTotal();
+setupMoveButtons();
 
-/* 占位稳健修复：编辑后变空时清掉浏览器残留的 <br>/空白，让灰色占位重新出现；
-   同时锁定滚动位置，避免可编辑元素变空时页面瞬间跳到顶部 */
-function normalizePlaceholder(el){
-  if(!el || el.nodeType!==1 || typeof el.hasAttribute!=='function') return;
-  if(!el.isContentEditable || !el.hasAttribute('data-ph')) return;
-  const bare=(el.textContent||'').replace(/[\s\u00a0\u200b]+/g,'');
-  if(bare==='' && el.innerHTML!==''){
-    const x=window.scrollX, y=window.scrollY;
-    el.innerHTML='';
-    window.scrollTo(x,y);
-  }
+/* 占位稳健修复：空字段保留一个不可见字符，避免 contenteditable 真空时浏览器把页面滚回顶部 */
+const EMPTY_MARK='\u200b';
+function cleanEditableText(text){
+  return (text||'').replace(/[\u200b\u200c\u200d\ufeff]/g,'');
 }
-document.addEventListener('input', e=>normalizePlaceholder(e.target), true);
-document.addEventListener('focusout', e=>normalizePlaceholder(e.target), true);
+function keepScroll(fn){
+  const x=window.scrollX, y=window.scrollY;
+  fn();
+  window.scrollTo(x,y);
+  requestAnimationFrame(()=>window.scrollTo(x,y));
+}
+function placeCaretEnd(el){
+  if(document.activeElement!==el) return;
+  const range=document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+function markEditableEmpty(el){
+  keepScroll(()=>{
+    el.textContent=EMPTY_MARK;
+    el.dataset.empty='true';
+    placeCaretEnd(el);
+  });
+}
+function setEditableText(el,text){
+  keepScroll(()=>{
+    el.textContent=text;
+    el.removeAttribute('data-empty');
+    placeCaretEnd(el);
+  });
+  if(el.classList.contains('dur')) recalcTotal();
+}
+function isPlaceholderEditable(el){
+  return el && el.nodeType===1 && el.isContentEditable && el.hasAttribute('data-ph');
+}
+function syncPlaceholderState(el){
+  if(!el || el.nodeType!==1 || typeof el.hasAttribute!=='function') return;
+  if(!isPlaceholderEditable(el)) return;
+  const cleaned=cleanEditableText(el.textContent);
+  const bare=cleaned.replace(/[\s\u00a0]+/g,'');
+  if(bare===''){
+    if(el.textContent!==EMPTY_MARK || el.dataset.empty!=='true') markEditableEmpty(el);
+    return;
+  }
+  if(el.dataset.empty==='true' || cleaned!==el.textContent) setEditableText(el,cleaned);
+}
+function initStablePlaceholders(root=document){
+  const nodes=[];
+  if(root.nodeType===1 && root.matches && root.matches('[contenteditable][data-ph]')) nodes.push(root);
+  if(root.querySelectorAll) nodes.push(...root.querySelectorAll('[contenteditable][data-ph]'));
+  nodes.forEach(syncPlaceholderState);
+}
+function deletionWouldEmpty(el){
+  const text=cleanEditableText(el.textContent);
+  if(text.length<=1) return true;
+  const sel=window.getSelection();
+  if(!sel || !sel.rangeCount || sel.isCollapsed) return false;
+  const anchor=sel.anchorNode && (sel.anchorNode.nodeType===1?sel.anchorNode:sel.anchorNode.parentElement);
+  const focus=sel.focusNode && (sel.focusNode.nodeType===1?sel.focusNode:sel.focusNode.parentElement);
+  if(!anchor || !focus || !el.contains(anchor) || !el.contains(focus)) return false;
+  return cleanEditableText(sel.toString()).length>=text.length;
+}
+document.addEventListener('beforeinput', e=>{
+  const el=e.target;
+  if(!isPlaceholderEditable(el)) return;
+  if(e.inputType && e.inputType.indexOf('delete')===0 && deletionWouldEmpty(el)){
+    e.preventDefault();
+    markEditableEmpty(el);
+    if(el.classList.contains('dur')) recalcTotal();
+    return;
+  }
+  if(e.inputType==='insertText' && e.data && el.dataset.empty==='true'){
+    e.preventDefault();
+    setEditableText(el,e.data);
+  }
+}, true);
+document.addEventListener('input', e=>syncPlaceholderState(e.target), true);
+document.addEventListener('focusin', e=>{
+  if(isPlaceholderEditable(e.target) && e.target.dataset.empty==='true') placeCaretEnd(e.target);
+}, true);
+document.addEventListener('focusout', e=>syncPlaceholderState(e.target), true);
+initStablePlaceholders();
 
 /* 标题栏粒子：鼠标靠近时粒子会轻微避让并回到原位 */
 (()=>{
