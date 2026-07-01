@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分镜模版 · 竖版</title>
+<title>分镜提示词故事版</title>
 <style>
   :root{
     --bg:#0a0a0a; --panel:#121110; --line:#2c2926; --line2:#3a3531;
@@ -22,6 +22,22 @@
   .bar .tip{font-size:11.5px;color:var(--muted);margin-left:auto;}
 
   .board{width:100%;max-width:880px;background:var(--bg);border:1px solid var(--line2);}
+  .story-title{position:relative;overflow:hidden;padding:24px 18px 22px;text-align:center;
+        border-bottom:1px solid var(--line2);
+        background:radial-gradient(circle at 50% 0%,rgba(201,154,82,.18),transparent 46%),#0d0c0b;}
+  .story-particles{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.9;}
+  .story-title:before,.story-title:after{content:"";position:absolute;top:50%;width:96px;height:1px;
+        background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.76;z-index:1;pointer-events:none;}
+  .story-title:before{left:18px;}
+  .story-title:after{right:18px;}
+  .story-title h1{position:relative;display:inline-block;font-family:var(--serif);font-size:34px;
+        line-height:1.15;font-weight:700;letter-spacing:0;color:var(--label);
+        text-shadow:0 0 18px rgba(201,154,82,.24);z-index:2;}
+  .story-title .mark{display:flex;align-items:center;justify-content:center;gap:8px;
+        margin-bottom:8px;color:var(--gold);font-size:10px;letter-spacing:2px;text-transform:uppercase;
+        position:relative;z-index:2;}
+  .story-title .mark:before,.story-title .mark:after{content:"";width:8px;height:8px;border:1px solid var(--gold);
+        transform:rotate(45deg);opacity:.72;}
   .grid{display:grid;grid-template-columns:14% 50% 36%;}
 
   .head>div{font-family:var(--serif);font-weight:700;font-size:18px;color:var(--label);
@@ -80,10 +96,68 @@
   [contenteditable]:focus{background:#1d1a17;box-shadow:inset 0 0 0 1px var(--gold);}
   .ev{display:inline;}
 
+  /* ---- 导航 ---- */
+  .nav{width:100%;max-width:880px;display:flex;gap:8px;margin-bottom:12px;}
+  .nav button{flex:1;font-family:var(--sans);font-size:13px;color:var(--muted);background:#121110;
+       border:1px solid var(--line2);border-radius:8px;padding:11px;cursor:pointer;transition:.15s;}
+  .nav button.active{color:var(--label);border-color:var(--gold);background:#1c1813;}
+  .nav button:hover{color:var(--label);}
+  .hidden{display:none!important;}
+
+  /* ---- 模板 2.0 ---- */
+  .v2top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+         padding:16px 16px 12px;border-bottom:1px solid var(--line2);}
+  .v2title{font-family:var(--serif);font-weight:700;font-size:22px;color:var(--label);line-height:1.35;}
+  .v2title .sep{color:var(--muted);margin:0 4px;}
+  .v2total{flex:0 0 auto;font-size:13.5px;color:var(--gold);border:1px solid var(--line2);
+           border-radius:6px;padding:7px 11px;white-space:nowrap;}
+  .v2total #v2total{font-weight:700;font-size:15px;}
+  .v2meta{display:flex;flex-wrap:wrap;gap:6px 32px;padding:11px 16px;font-size:12.5px;
+          color:var(--ink);border-bottom:1px solid var(--line2);}
+  .v2meta b{color:var(--label);font-family:var(--serif);}
+  .v2band{font-family:var(--serif);font-weight:700;font-size:14px;color:var(--label);text-align:center;
+          background:#17140f;padding:9px;border-bottom:1px solid var(--line2);letter-spacing:1.5px;}
+  .v2grid{display:grid;grid-template-columns:1fr 1fr;align-items:start;}
+  .v2grid>.v2card{border-right:1px solid var(--line);border-bottom:1px solid var(--line2);padding:13px;}
+  .v2grid>.v2card:nth-child(2n){border-right:none;}
+  .v2ch{display:inline-block;font-family:var(--serif);font-weight:700;font-size:13px;color:#fff;
+        background:#242018;border:1px solid var(--line2);border-radius:4px;padding:3px 11px;margin-bottom:10px;}
+  .v2ch .dur{color:var(--gold);min-width:14px;display:inline-block;text-align:center;}
+  .v2desc{margin-top:11px;}
+  .v2desc p{font-size:12.5px;line-height:1.7;margin-bottom:5px;color:var(--ink);
+            word-break:break-word;overflow-wrap:anywhere;}
+  .v2desc b{font-family:var(--serif);color:var(--label);font-weight:700;}
+  .v2grid2{display:grid;grid-template-columns:1fr 1fr;align-items:start;}
+  .v2grid2>.v2sub{padding:13px;border-right:1px solid var(--line);border-bottom:1px solid var(--line2);}
+  .v2grid2>.v2sub:last-child{border-right:none;}
+  .v2sublabel{font-size:12px;color:var(--muted);margin-bottom:8px;}
+
+  /* ---- 增删控制条 ---- */
+  .rowctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 16px;
+          border-bottom:1px solid var(--line2);background:#0e0d0c;}
+  .rowctl button{font-family:var(--sans);font-size:12.5px;color:var(--label);background:#1a1816;
+          border:1px solid var(--line2);border-radius:6px;padding:6px 13px;cursor:pointer;transition:.15s;}
+  .rowctl button:hover{border-color:var(--gold);}
+  .rowctl-hint{font-size:11px;color:var(--muted);}
+  /* 空白可编辑占位提示 */
+  [contenteditable]:empty:before{content:attr(data-ph);color:#6a655c;}
+
+  .minictl{display:flex;gap:6px;margin-top:10px;}
+  .minictl button{font-family:var(--sans);font-size:11.5px;color:var(--label);background:#1a1816;
+        border:1px solid var(--line2);border-radius:5px;padding:4px 11px;cursor:pointer;transition:.15s;}
+  .minictl button:hover{border-color:var(--gold);}
+  .watermark{text-align:center;font-size:11px;color:rgba(255,255,255,0.14);
+        letter-spacing:2px;padding:6px 0 14px;}
+
   @media print{
     body{background:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:0;}
-    .bar{display:none;} .board{border:none;max-width:100%;} .drop .x{display:none!important;}
+    .bar{display:none;} .nav{display:none;} .noexport{display:none!important;} .board{border:none;max-width:100%;} .drop .x{display:none!important;}
     [contenteditable]{box-shadow:none!important;background:transparent!important;}
+  }
+  @media (max-width:640px){
+    .story-title{padding:20px 12px 18px;}
+    .story-title:before,.story-title:after{width:42px;}
+    .story-title h1{font-size:26px;}
   }
 </style>
 </head>
@@ -92,74 +166,88 @@
 <div class="bar">
   <button onclick="extractPalette()">🎨 重新提取色彩板</button>
   <button onclick="window.print()">🖨 导出 PDF</button>
-  <button onclick="saveHTML()">💾 下载含图 HTML</button>
   <button onclick="exportPNG(event)">🖼 导出整页图片</button>
   <span class="tip">图直接拖进画面格 · 文字点一下即可修改</span>
 </div>
 
-<div class="board" id="board">
+<div class="nav">
+  <button id="tab1" class="active" onclick="showView(1)">① 镜头分镜 · 1.0</button>
+  <button id="tab2" onclick="showView(2)">② 镜头分镜 · 2.0</button>
+</div>
+
+<div class="board" id="view1">
+  <div class="story-title">
+    <canvas class="story-particles" aria-hidden="true"></canvas>
+    <div class="mark">Storyboard Prompt</div>
+    <h1>分镜提示词故事版</h1>
+  </div>
   <div class="grid head">
     <div>分镜序号</div><div>分镜画面</div><div>内容描述（动作 / 镜头 / 画面 / 氛围）</div>
   </div>
 
   <div class="grid row">
-    <div class="cut"><b contenteditable spellcheck="false">Cut 1</b><div class="tc" contenteditable spellcheck="false">00:00 – 00:02</div></div>
+    <div class="cut"><b contenteditable spellcheck="false">Cut 1</b><div class="tc" contenteditable spellcheck="false">00:00 – 00:00</div></div>
     <div class="frame drop frameZone"><div class="ph">拖入 / 点击 上传首帧</div><div class="x">×</div></div>
     <div class="desc">
-      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false">少女（红衣）白泽</span></p>
-      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false">白泽低头，少女静静面对</span></p>
-      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false">近景，少女与白泽对峙，气氛凝重神秘，落叶轻落，森林昏暗。</span></p>
-      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false">近景，跟踪镜头缓慢向前推进，轻微摇移，营造压迫与神秘感。</span></p>
+      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
     </div>
   </div>
 
   <div class="grid row">
-    <div class="cut"><b contenteditable spellcheck="false">Cut 2</b><div class="tc" contenteditable spellcheck="false">00:02 – 00:04</div></div>
+    <div class="cut"><b contenteditable spellcheck="false">Cut 2</b><div class="tc" contenteditable spellcheck="false">00:00 – 00:00</div></div>
     <div class="frame drop frameZone"><div class="ph">拖入 / 点击 上传首帧</div><div class="x">×</div></div>
     <div class="desc">
-      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false">少女 白泽</span></p>
-      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false">少女借力跃起，流畅地爬上白泽背部</span></p>
-      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false">中近景，动作连贯一气呵成，衣袍飘动，白泽肌肉微绷，准备起身。</span></p>
-      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false">跟踪镜头继续向前推进并上移，贴近动作，保持流畅运动。</span></p>
+      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
     </div>
   </div>
 
   <div class="grid row">
-    <div class="cut"><b contenteditable spellcheck="false">Cut 3</b><div class="tc" contenteditable spellcheck="false">00:04 – 00:07</div></div>
+    <div class="cut"><b contenteditable spellcheck="false">Cut 3</b><div class="tc" contenteditable spellcheck="false">00:00 – 00:00</div></div>
     <div class="frame drop frameZone"><div class="ph">拖入 / 点击 上传首帧</div><div class="x">×</div></div>
     <div class="desc">
-      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false">少女 白泽</span></p>
-      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false">白泽抬起前蹄，猛然转身并开始奔袭</span></p>
-      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false">中景，动态模糊增强速度感，落叶四散，阳光穿透树荫形成丁达尔效应。</span></p>
-      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false">跟踪镜头高速推进并环绕侧后方，随着转身转为后方追随。</span></p>
+      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
     </div>
   </div>
 
   <div class="grid row">
-    <div class="cut"><b contenteditable spellcheck="false">Cut 4</b><div class="tc" contenteditable spellcheck="false">00:07 – 00:11</div></div>
+    <div class="cut"><b contenteditable spellcheck="false">Cut 4</b><div class="tc" contenteditable spellcheck="false">00:00 – 00:00</div></div>
     <div class="frame drop frameZone"><div class="ph">拖入 / 点击 上传首帧</div><div class="x">×</div></div>
     <div class="desc">
-      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false">少女 白泽</span></p>
-      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false">全力疾驰，向深林冲去</span></p>
-      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false">中远景，光影对比增强，树木掠过，叶片飞舞，红衣在风中剧烈飘动。</span></p>
-      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false">跟踪镜头高速后追，略微上升，增强速度与冲击力，运动模糊明显。</span></p>
+      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
     </div>
   </div>
 
   <div class="grid row">
-    <div class="cut"><b contenteditable spellcheck="false">Cut 5</b><div class="tc" contenteditable spellcheck="false">00:11 – 00:14</div></div>
+    <div class="cut"><b contenteditable spellcheck="false">Cut 5</b><div class="tc" contenteditable spellcheck="false">00:00 – 00:00</div></div>
     <div class="frame drop frameZone"><div class="ph">拖入 / 点击 上传首帧</div><div class="x">×</div></div>
     <div class="desc">
-      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false">少女 白泽</span></p>
-      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false">持续奔袭，远离镜头</span></p>
-      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false">远景（长焦压缩），两者逐渐消失在茂密森林中，光影斑驳，落叶仍在飞扬。</span></p>
-      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false">长焦远景，跟踪镜头减速并稳定，保持压缩感，增强史诗氛围与余韵。</span></p>
+      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
     </div>
   </div>
 
+  <div class="rowctl noexport" id="rowctl1">
+    <button onclick="addRow1()">＋ 增加一个镜头</button>
+    <button onclick="delRow1()">－ 删除最后一个</button>
+    <span class="rowctl-hint">1.0 一行一个镜头，可逐个增删</span>
+  </div>
   <div class="panels t">
     <div>
-      <div class="ptitle">场景主视图<small>（长焦压缩）</small></div>
+      <div class="ptitle">场景主视图<small contenteditable spellcheck="false">（长焦压缩）</small></div>
       <div class="drop"><div class="ph">拖入 / 点击 上传</div><div class="x">×</div></div>
     </div>
     <div>
@@ -168,13 +256,14 @@
     </div>
     <div>
       <div class="ptitle">图例</div>
-      <ul class="legend">
-        <li><span class="n">1</span><span contenteditable spellcheck="false">靠近对峙（近景）</span></li>
-        <li><span class="n">2</span><span contenteditable spellcheck="false">女孩上背（中近景）</span></li>
-        <li><span class="n">3</span><span contenteditable spellcheck="false">转身奔袭（中景）</span></li>
-        <li><span class="n">4</span><span contenteditable spellcheck="false">高速疾驰（中远景）</span></li>
-        <li><span class="n">5</span><span contenteditable spellcheck="false">远离消失（远景·长焦）</span></li>
+      <ul class="legend" id="legend1">
+        <li><span class="n">1</span><span contenteditable spellcheck="false" data-ph="点击填写"></span></li>
+        <li><span class="n">2</span><span contenteditable spellcheck="false" data-ph="点击填写"></span></li>
+        <li><span class="n">3</span><span contenteditable spellcheck="false" data-ph="点击填写"></span></li>
+        <li><span class="n">4</span><span contenteditable spellcheck="false" data-ph="点击填写"></span></li>
+        <li><span class="n">5</span><span contenteditable spellcheck="false" data-ph="点击填写"></span></li>
       </ul>
+      <div class="minictl noexport"><button onclick="addLegend()">＋ 图例</button><button onclick="delLegend()">－ 图例</button></div>
     </div>
   </div>
 
@@ -182,7 +271,7 @@
     <div>
       <div class="ptitle">光影与氛围<small>（Lighting &amp; Mood）</small></div>
       <div class="lab" contenteditable spellcheck="false">灯光效果：</div>
-      <div class="txt" contenteditable spellcheck="false">主体逆光 + 体积光（丁达尔效应）<br>树荫穿透光束，动态光斑，强对比</div>
+      <div class="txt" contenteditable spellcheck="false" data-ph="点击填写"></div>
     </div>
     <div>
       <div class="ptitle">色彩板<small>（Color Palette · 自动识别）</small></div>
@@ -197,11 +286,114 @@
     </div>
     <div>
       <div class="ptitle">风格<small>（Style）</small></div>
-      <div class="txt" contenteditable spellcheck="false">史诗奇幻 / 写实风格<br>高细节 / 电影质感 / 8K 写实渲染</div>
+      <div class="txt" contenteditable spellcheck="false" data-ph="点击填写"></div>
     </div>
   </div>
 
-  <div class="foot">分镜模版 · 竖版　|　拖图填格 · 文字点选即改 · 色彩板自动识别 · 可导出 PDF / 含图 HTML</div>
+  <div class="foot">分镜模版 · 竖版　|　拖图填格 · 文字点选即改 · 色彩板自动识别 · 可导出 PDF / 整页图片</div>
+  <div class="watermark">@jellykevin</div>
+</div>
+
+<div class="board hidden" id="view2">
+  <div class="story-title">
+    <canvas class="story-particles" aria-hidden="true"></canvas>
+    <div class="mark">Storyboard Prompt</div>
+    <h1>分镜提示词故事版</h1>
+  </div>
+  <div class="v2top">
+    <div class="v2title"><span contenteditable spellcheck="false" data-ph="分镜模板"></span><span class="sep">｜</span><span contenteditable spellcheck="false" data-ph="镜头内容填写区"></span></div>
+    <div class="v2total">总时长：<span id="v2total">0</span> 秒</div>
+  </div>
+  <div class="v2meta">
+    <span><b>场景：</b><span contenteditable spellcheck="false" data-ph="点击填写"></span></span>
+    <span><b>项目：</b><span contenteditable spellcheck="false" data-ph="点击填写"></span></span>
+  </div>
+
+  <div class="v2band">分镜板（主模块）</div>
+  <div class="v2grid">
+    <div class="v2card">
+      <div class="v2ch">Cut 1（<span class="dur" contenteditable spellcheck="false" data-ph="0"></span> 秒）</div>
+      <div class="frame drop frameZone v2frame"><div class="ph">拖入 / 点击 上传</div><div class="x">×</div></div>
+      <div class="v2desc">
+        <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>描述：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>台词：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      </div>
+    </div>
+    <div class="v2card">
+      <div class="v2ch">Cut 2（<span class="dur" contenteditable spellcheck="false" data-ph="0"></span> 秒）</div>
+      <div class="frame drop frameZone v2frame"><div class="ph">拖入 / 点击 上传</div><div class="x">×</div></div>
+      <div class="v2desc">
+        <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>描述：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>台词：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      </div>
+    </div>
+    <div class="v2card">
+      <div class="v2ch">Cut 3（<span class="dur" contenteditable spellcheck="false" data-ph="0"></span> 秒）</div>
+      <div class="frame drop frameZone v2frame"><div class="ph">拖入 / 点击 上传</div><div class="x">×</div></div>
+      <div class="v2desc">
+        <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>描述：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>台词：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      </div>
+    </div>
+    <div class="v2card">
+      <div class="v2ch">Cut 4（<span class="dur" contenteditable spellcheck="false" data-ph="0"></span> 秒）</div>
+      <div class="frame drop frameZone v2frame"><div class="ph">拖入 / 点击 上传</div><div class="x">×</div></div>
+      <div class="v2desc">
+        <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>描述：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+        <p><b>台词：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="rowctl noexport">
+    <button onclick="addPair2()">＋ 增加镜头（每次两个）</button>
+    <button onclick="delPair2()">－ 删除末尾两个</button>
+    <span class="rowctl-hint">为保持排版整齐，2.0 只能是偶数个（2 / 4 / 6 / 8 / 10）</span>
+  </div>
+  <div class="v2band">场景图（Secondary）</div>
+  <div class="v2grid2">
+    <div class="v2sub">
+      <div class="v2sublabel">全景（Panorama）</div>
+      <div class="frame drop v2frame"><div class="ph">拖入 / 点击 上传</div><div class="x">×</div></div>
+    </div>
+    <div class="v2sub">
+      <div class="v2sublabel">俯视图（Top View）</div>
+      <div class="frame drop v2frame"><div class="ph">拖入 / 点击 上传</div><div class="x">×</div></div>
+    </div>
+  </div>
+
+  <div class="v2band">光影与氛围（Lighting &amp; Mood）</div>
+  <div class="panels">
+    <div>
+      <div class="lab" contenteditable spellcheck="false">灯光效果：</div>
+      <div class="txt" contenteditable spellcheck="false" data-ph="点击填写"></div>
+    </div>
+    <div>
+      <div class="ptitle">色彩板<small>（Color Palette · 自动识别）</small></div>
+      <div class="swatches"><i style="background:#3a4038"></i><i style="background:#2f4438"></i><i style="background:#d7dad9"></i><i style="background:#e0a53a"></i><i style="background:#1c1c1c"></i><i style="background:#6b6f6c"></i><i style="background:#b9bcbb"></i></div>
+      <div class="hexes"></div>
+      <div class="palhint">上传 Cut 图后自动从画面提取主色。</div>
+    </div>
+    <div>
+      <div class="lab" contenteditable spellcheck="false">风格：</div>
+      <div class="txt" contenteditable spellcheck="false" data-ph="点击填写"></div>
+    </div>
+  </div>
+
+  <div class="foot">分镜模版 2.0 · 卡片式　|　时长自动汇总 · 文字点选即改 · 色彩板自动识别</div>
+  <div class="watermark">@jellykevin</div>
 </div>
 
 <input type="file" id="fileInput" accept="image/*" style="display:none">
@@ -233,13 +425,14 @@
 const fileInput=document.getElementById('fileInput');
 let activeZone=null;
 
-document.querySelectorAll('.drop').forEach(z=>{
+function bindDropZone(z){
   z.addEventListener('click',e=>{ if(e.target.classList.contains('x'))return; activeZone=z; fileInput.click(); });
   z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over');});
   z.addEventListener('dragleave',()=>z.classList.remove('over'));
   z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');
     const f=e.dataTransfer.files[0]; if(f) loadInto(z,f);});
-});
+}
+document.querySelectorAll('.drop').forEach(bindDropZone);
 fileInput.addEventListener('change',e=>{
   const f=e.target.files[0]; if(f&&activeZone) loadInto(activeZone,f); fileInput.value='';
 });
@@ -277,8 +470,8 @@ function loadInto(zone,file){
     zone.classList.add('filled');
     const x=zone.querySelector('.x');
     x.onclick=ev=>{ev.stopPropagation(); img.remove(); zone.classList.remove('filled');
-      if(zone.classList.contains('frameZone')) extractPalette();};
-    if(zone.classList.contains('frameZone')) img.onload=extractPalette;
+      if(zone.classList.contains('frameZone')) extractPalette(zone.closest('.board'));};
+    if(zone.classList.contains('frameZone')) img.onload=()=>extractPalette(zone.closest('.board'));
   }).catch(err=>{
     zone.classList.remove('loading');
     alert('图片处理失败，请换一张图试试：'+err.message);
@@ -305,8 +498,13 @@ function medianCut(pixels,n){
 }
 function hex(c){return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();}
 
-function extractPalette(){
-  const imgs=[...document.querySelectorAll('.frameZone img')].filter(i=>i.complete&&i.naturalWidth);
+function activeBoard(){
+  return document.getElementById('view2').classList.contains('hidden')
+    ? document.getElementById('view1') : document.getElementById('view2');
+}
+function extractPalette(board){
+  board = board || activeBoard();
+  const imgs=[...board.querySelectorAll('.frameZone img')].filter(i=>i.complete&&i.naturalWidth);
   if(!imgs.length)return;
   const pixels=[];
   imgs.forEach(img=>{
@@ -317,10 +515,25 @@ function extractPalette(){
   });
   if(pixels.length<7)return;
   let pal=medianCut(pixels,7).sort((a,b)=>lum(a)-lum(b));
-  const sw=document.querySelectorAll('#swatches i');
-  const hx=document.getElementById('hexes'); hx.innerHTML='';
+  const sw=board.querySelectorAll('.swatches i');
+  const hx=board.querySelector('.hexes'); hx.innerHTML='';
   pal.forEach((c,i)=>{ if(sw[i]){sw[i].style.background=hex(c);}
     const s=document.createElement('span'); s.textContent=hex(c); hx.appendChild(s); });
+}
+function showView(n){
+  document.getElementById('view1').classList.toggle('hidden', n!==1);
+  document.getElementById('view2').classList.toggle('hidden', n!==2);
+  document.getElementById('tab1').classList.toggle('active', n===1);
+  document.getElementById('tab2').classList.toggle('active', n===2);
+  if(window.refreshStoryTitleParticles) requestAnimationFrame(window.refreshStoryTitleParticles);
+}
+function recalcTotal(){
+  let sum=0;
+  document.querySelectorAll('#view2 .v2ch .dur').forEach(el=>{
+    const v=parseFloat((el.textContent||'').replace(/[^0-9.]/g,''))||0; sum+=v;
+  });
+  const out = Number.isInteger(sum)? sum : Math.round(sum*10)/10;
+  const t=document.getElementById('v2total'); if(t) t.textContent=out;
 }
 
 async function waitImagesDecoded(node){
@@ -335,7 +548,9 @@ async function exportPNG(ev){
   const btn=ev&&ev.currentTarget, old=btn?btn.textContent:'';
   if(document.activeElement&&document.activeElement.blur) document.activeElement.blur();
   if(btn){btn.textContent='导出中…';btn.disabled=true;}
-  const node=document.getElementById('board');
+  const node=activeBoard();
+  const isV2=!document.getElementById('view2').classList.contains('hidden');
+  const fname=isV2?'分镜模版2.0':'分镜模版1.0';
   try{
     await waitImagesDecoded(node);
     const canvas=await html2canvas(node,{
@@ -343,15 +558,16 @@ async function exportPNG(ev){
       scale:Math.min(2, window.devicePixelRatio||1.5),
       useCORS:true,
       imageTimeout:0,
-      logging:false
+      logging:false,
+      ignoreElements:(el)=>el.classList&&el.classList.contains('noexport')
     });
     const url=canvas.toDataURL('image/png');
-    const a=document.createElement('a'); a.href=url; a.download='分镜模版.png'; a.click();
+    const a=document.createElement('a'); a.href=url; a.download=fname+'.png'; a.click();
   }catch(e1){
     try{
-      const canvas2=await html2canvas(node,{backgroundColor:'#0a0a0a',scale:1,useCORS:true,imageTimeout:0,logging:false});
+      const canvas2=await html2canvas(node,{backgroundColor:'#0a0a0a',scale:1,useCORS:true,imageTimeout:0,logging:false,ignoreElements:(el)=>el.classList&&el.classList.contains('noexport')});
       const url2=canvas2.toDataURL('image/jpeg',0.92);
-      const a=document.createElement('a'); a.href=url2; a.download='分镜模版.jpg'; a.click();
+      const a=document.createElement('a'); a.href=url2; a.download=fname+'.jpg'; a.click();
       alert('图片较大，已自动改为压缩导出 JPG。');
     }catch(e2){
       alert('导出失败，可能是图片太多/太大导致浏览器内存不足。\n建议：分两次截图，或减少单张图片尺寸后重试。');
@@ -361,13 +577,230 @@ async function exportPNG(ev){
   }
 }
 
-function saveHTML(){
-  const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
-  const blob=new Blob([html],{type:'text/html'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download='分镜_已填图.html'; a.click();
-  URL.revokeObjectURL(a.href);
+/* ---------- 1.0 增删镜头（逐个） ---------- */
+function makeRow1(n){
+  const div=document.createElement('div');
+  div.className='grid row';
+  div.innerHTML=`
+    <div class="cut"><b contenteditable spellcheck="false">Cut ${n}</b><div class="tc" contenteditable spellcheck="false">00:00 – 00:00</div></div>
+    <div class="frame drop frameZone"><div class="ph">拖入 / 点击 上传首帧</div><div class="x">×</div></div>
+    <div class="desc">
+      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>画面：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+    </div>`;
+  return div;
 }
+function renumber1(){
+  document.querySelectorAll('#view1 .row .cut b').forEach((b,i)=>{ b.textContent='Cut '+(i+1); });
+}
+function addRow1(){
+  const view=document.getElementById('view1');
+  const ctl=document.getElementById('rowctl1');
+  const n=view.querySelectorAll('.row').length+1;
+  const row=makeRow1(n);
+  view.insertBefore(row, ctl);
+  row.querySelectorAll('.drop').forEach(bindDropZone);
+  renumber1();
+  row.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function delRow1(){
+  const rows=document.querySelectorAll('#view1 .row');
+  if(rows.length<=1){ alert('至少保留 1 个镜头'); return; }
+  rows[rows.length-1].remove();
+  renumber1();
+  extractPalette(document.getElementById('view1'));
+}
+
+/* ---------- 1.0 图例增删 ---------- */
+function renumberLegend(){
+  document.querySelectorAll('#legend1 li .n').forEach((n,i)=>{ n.textContent=i+1; });
+}
+function addLegend(){
+  const ul=document.getElementById('legend1');
+  const li=document.createElement('li');
+  li.innerHTML='<span class="n"></span><span contenteditable spellcheck="false" data-ph="点击填写"></span>';
+  ul.appendChild(li);
+  renumberLegend();
+}
+function delLegend(){
+  const items=document.querySelectorAll('#legend1 li');
+  if(items.length<=1){ alert('至少保留 1 条图例'); return; }
+  items[items.length-1].remove();
+  renumberLegend();
+}
+
+/* ---------- 2.0 增删镜头（成对，2/4/6/8/10） ---------- */
+function makeCard2(n){
+  const div=document.createElement('div');
+  div.className='v2card';
+  div.innerHTML=`
+    <div class="v2ch">Cut ${n}（<span class="dur" contenteditable spellcheck="false" data-ph="0"></span> 秒）</div>
+    <div class="frame drop frameZone v2frame"><div class="ph">拖入 / 点击 上传</div><div class="x">×</div></div>
+    <div class="v2desc">
+      <p><b>主体：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>动作：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>描述：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>镜头：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+      <p><b>台词：</b><span class="ev" contenteditable spellcheck="false" data-ph="点击填写"></span></p>
+    </div>`;
+  return div;
+}
+function renumber2(){
+  document.querySelectorAll('#view2 .v2grid .v2card .v2ch').forEach((h,i)=>{
+    if(h.firstChild && h.firstChild.nodeType===3) h.firstChild.nodeValue='Cut '+(i+1)+'（';
+  });
+}
+function bindDur(el){ el.addEventListener('input',recalcTotal); el.addEventListener('blur',recalcTotal); }
+function addPair2(){
+  const grid=document.querySelector('#view2 .v2grid');
+  const count=grid.querySelectorAll('.v2card').length;
+  if(count>=10){ alert('为保持排版整齐，2.0 最多 10 个镜头'); return; }
+  let last=null;
+  for(let k=0;k<2;k++){
+    const c=makeCard2(count+1+k);
+    grid.appendChild(c); last=c;
+    c.querySelectorAll('.drop').forEach(bindDropZone);
+    c.querySelectorAll('.v2ch .dur').forEach(bindDur);
+  }
+  renumber2(); recalcTotal();
+  if(last) last.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function delPair2(){
+  const grid=document.querySelector('#view2 .v2grid');
+  const cards=grid.querySelectorAll('.v2card');
+  if(cards.length<=2){ alert('至少保留 2 个镜头'); return; }
+  cards[cards.length-1].remove();
+  cards[cards.length-2].remove();
+  renumber2(); recalcTotal();
+  extractPalette(document.getElementById('view2'));
+}
+
+document.querySelectorAll('#view2 .v2ch .dur').forEach(el=>{
+  el.addEventListener('input', recalcTotal);
+  el.addEventListener('blur', recalcTotal);
+});
+recalcTotal();
+
+/* 占位稳健修复：编辑后变空时清掉浏览器残留的 <br>/空白，让灰色占位重新出现；
+   同时锁定滚动位置，避免可编辑元素变空时页面瞬间跳到顶部 */
+function normalizePlaceholder(el){
+  if(!el || el.nodeType!==1 || typeof el.hasAttribute!=='function') return;
+  if(!el.isContentEditable || !el.hasAttribute('data-ph')) return;
+  const bare=(el.textContent||'').replace(/[\s\u00a0\u200b]+/g,'');
+  if(bare==='' && el.innerHTML!==''){
+    const x=window.scrollX, y=window.scrollY;
+    el.innerHTML='';
+    window.scrollTo(x,y);
+  }
+}
+document.addEventListener('input', e=>normalizePlaceholder(e.target), true);
+document.addEventListener('focusout', e=>normalizePlaceholder(e.target), true);
+
+/* 标题栏粒子：鼠标靠近时粒子会轻微避让并回到原位 */
+(()=>{
+  const titles=[...document.querySelectorAll('.story-title')];
+  const systems=[];
+
+  titles.forEach(title=>{
+    const canvas=title.querySelector('.story-particles');
+    if(!canvas) return;
+    const ctx=canvas.getContext('2d');
+    const system={title,canvas,ctx,particles:[],mouse:null,w:0,h:0,dpr:1};
+    systems.push(system);
+
+    title.addEventListener('mousemove', e=>{
+      const r=title.getBoundingClientRect();
+      system.mouse={x:e.clientX-r.left,y:e.clientY-r.top};
+    });
+    title.addEventListener('mouseleave', ()=>{ system.mouse=null; });
+  });
+
+  function resizeSystem(system){
+    const r=system.title.getBoundingClientRect();
+    const w=Math.round(r.width), h=Math.round(r.height);
+    if(!w || !h) return;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    if(system.w===w && system.h===h && system.dpr===dpr && system.particles.length) return;
+    system.w=w; system.h=h; system.dpr=dpr;
+    system.canvas.width=Math.round(w*dpr);
+    system.canvas.height=Math.round(h*dpr);
+    system.canvas.style.width=w+'px';
+    system.canvas.style.height=h+'px';
+    system.ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    const count=Math.max(34,Math.min(70,Math.round(w/13)));
+    system.particles=Array.from({length:count},(_,i)=>{
+      const band=h*(.22+Math.random()*.58);
+      const baseX=(i+.5)*w/count + (Math.random()-.5)*18;
+      const baseY=band + (Math.random()-.5)*16;
+      return {
+        x:baseX,y:baseY,baseX,baseY,
+        vx:(Math.random()-.5)*.28,vy:(Math.random()-.5)*.28,
+        size:Math.random()*1.7+.7
+      };
+    });
+  }
+
+  function drawSystem(system){
+    resizeSystem(system);
+    if(!system.w || !system.h) return;
+    const {ctx,w,h,particles,mouse}=system;
+    ctx.clearRect(0,0,w,h);
+
+    particles.forEach(p=>{
+      let ax=(p.baseX-p.x)*.012;
+      let ay=(p.baseY-p.y)*.012;
+      if(mouse){
+        const dx=p.x-mouse.x, dy=p.y-mouse.y;
+        const dist=Math.max(1,Math.hypot(dx,dy));
+        if(dist<118){
+          const force=(1-dist/118)*.42;
+          ax+=(dx/dist)*force;
+          ay+=(dy/dist)*force;
+        }
+      }
+      p.vx=(p.vx+ax)*.92;
+      p.vy=(p.vy+ay)*.92;
+      p.x+=p.vx;
+      p.y+=p.vy;
+    });
+
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const a=particles[i], b=particles[j];
+        const dist=Math.hypot(a.x-b.x,a.y-b.y);
+        if(dist<78){
+          ctx.strokeStyle='rgba(201,154,82,'+(0.18*(1-dist/78))+')';
+          ctx.lineWidth=.6;
+          ctx.beginPath();
+          ctx.moveTo(a.x,a.y);
+          ctx.lineTo(b.x,b.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    particles.forEach(p=>{
+      const glow=mouse?Math.max(0,1-Math.hypot(p.x-mouse.x,p.y-mouse.y)/120):0;
+      ctx.fillStyle='rgba(246,241,231,'+(.34+glow*.34)+')';
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size+glow*.8,0,Math.PI*2);
+      ctx.fill();
+    });
+  }
+
+  function animate(){
+    systems.forEach(drawSystem);
+    requestAnimationFrame(animate);
+  }
+
+  window.refreshStoryTitleParticles=()=>systems.forEach(resizeSystem);
+  window.addEventListener('resize', window.refreshStoryTitleParticles);
+  window.refreshStoryTitleParticles();
+  animate();
+})();
 </script>
 </body>
 </html>
